@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!-- 父Bean：如果有 abstract="true" 属性，则说明该Bean不能被实例化，可以被用来继承 -->
+	<bean id="address" class="com.lskyo.spring.beans.autowire.Address"
+		p:city="Beijing" p:street="Wudaokou"></bean>
+		
+		
+	<!-- 子Bean：使用parent属性继承address的配置 -->
+	<bean id="address2" p:street="Dazhongsi" parent="address"></bean>
+
+	
+	
+	<bean id="car" class="com.lskyo.spring.beans.autowire.Car"></bean>
+	
+	<!-- 使用 depends-on 属性可指定Bean所依赖的Bean，若要依赖的Bean在之前没有实例化，则会报错 -->
+	<bean id="person" class="com.lskyo.spring.beans.autowire.Person"
+		p:name="Tom" p:address-ref="address" depends-on="car"></bean>
+</beans>

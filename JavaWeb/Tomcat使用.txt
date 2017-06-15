@@ -1,0 +1,100 @@
+一、Tomcat服务器端口的配置
+修改服务器启动端口默认配置，在server.xml中修改
+<Connector port="8080" ... />
+
+二、Tomcat服务器虚拟目录的映射方式
+1.在server.xml文件的host元素中配置
+<Host name="localhost"... >
+	<Context path="/JavaWebApp" docBase="F:\JavaWebDemoProject" />
+</Host>
+path：用来配置虚似目录，必须以"/"开头。
+docBase：配置此虚似目录对应着硬盘上的Web应用所在目录。
+2.让tomcat服务器自动映射
+Tomcat服务器会自动管理webapps目录下的所有web应用，并把它映射成虚似目录。
+例如：把JavaWebDemoProject这个JavaWeb应用直接copy到tomcat服务器webapps目录中，
+此时Tomcat服务器就会自动为JavaWebDemoProject这个JavaWeb应用映射一个同名的虚拟目录"/JavaWebDemoProject"，
+然后就可以使用浏览器访问这个JavaWeb应用的资源了。
+3.创建映射XML文件
+例如：在tomcat服务器的\conf\Catalina\localhost目录下添加一个以xml作为扩展名的文件，比如aa.xml
+文件中包含代码<Context docBase="F:\JavaWebDemoProject" />
+那么Tomcat会把"F:\JavaWebDemoProject"映射为aa，
+然后就可以在浏览器输入"http://localhost:8080/aa"访问"F:\JavaWebDemoProject"
+使用这种方式映射虚拟目录的最大好处是修改了配置文件后不用重启Tomcat服务器。
+
+三、Tomcat服务器配置虚似主机
+1.新建虚拟主机
+修改conf文件夹下的server.xml配置文件，添加代码
+<Host name="www.lskyo.com" appBase="F:\JavaWebApps"> </Host>
+name：主机名
+appBase：存放了一个或者多个JavaWeb应用的文件夹
+2.在windows系统中注册域名
+修改"C:\Windows\System32\drivers\etc"目录下的hosts文件，将设置的域名和IP地址绑定在一起：
+127.0.0.1    www.lskyo.com
+
+四、Tomcat的体系结构
+Tomcat服务器的启动是基于一个server.xml文件的，Tomcat启动的时候首先会启动一个Server，
+Server里面就会启动Service，Service里面就会启动多个"Connector(连接器)"，每一个连接器
+都在等待客户机的连接，当有用户使用浏览器去访问服务器上面的web资源时，首先是连接
+到Connector(连接器)，Connector(连接器)是不处理用户的请求的，而是将用户的请求交给一
+个Engine(引擎)去处理，Engine(引擎)接收到请求后就会解析用户想要访问的Host，然后将请求
+交给相应的Host，Host收到请求后就会解析出用户想要访问这个Host下面的哪一个Web应用,一
+个web应用对应一个Context。
+
+五、加密原理
+1.对称加密（单密钥加密）
+采用单钥密码系统的加密方法，同一个密钥可以同时用作信息的加密和解密，这种加密方法称为对
+称加密，也称为单密钥加密。需要对加密和解密使用相同密钥的加密算法。由于其速度快，对称性
+加密通常在消息发送方需要加密大量数据时使用。对称性加密也称为密钥加密。所谓对称，就是采
+用这种加密方法的双方使用方式用同样的密钥进行加密和解密。密钥是控制加密及解密过程的指令。
+算法是一组规则，规定如何进行加密和解密。加密的安全性不仅取决于加密算法本身，密钥管理的
+安全性更是重要。因为加密和解密都使用同一个密钥，如何把密钥安全地传递到解密者手上就成了
+必须要解决的问题。
+2.非对称加密
+非对称加密算法需要两个密钥：公开密钥（publickey）和私有密钥（privatekey）。
+公开密钥与私有密钥是一对，如果用公开密钥对数据进行加密，只有用对应的私有密钥才能解密；
+如果用私有密钥对数据进行加密，那么只有用对应的公开密钥才能解密。因为加密和解密使用的是
+两个不同的密钥，所以这种算法叫作非对称加密算法。 非对称加密算法实现机密信息交换的基本过
+程是：甲方生成一对密钥并将其中的一把作为公用密钥向其它方公开；得到该公用密钥的乙方使用该
+密钥对机密信息进行加密后再发送给甲方；甲方再用自己保存的另一把专用密钥对加密后的信息进
+行解密。另一方面，甲方可以使用乙方的公钥对机密信息进行签名后再发送给乙方；乙方再用自己的
+私匙对数据进行验签。
+
+六、https连接器
+1.生成Tomcat服务器的数字证书
+SUN公司提供了制作证书的工具keytool， 在JDK 1.4以后的版本中都包含了这一工具，它的位置
+为<JAVA_HOME>\bin\keytool.exe，打开命令控制台，输入命令：
+keytool -genkey -alias tomcat -keyalg RSA
+使用keytool生成一个名字为tomcat的证书，存放在.keystore这个密钥库中，命令执行完之后，
+操作系统的用户文件夹下面就会生成一个.keystore文件。
+使用命令：keytool -list -keystore .keystore查看.keystore密钥库里面的所有证书。
+2.配置https连接器
+将生成的.keystore密钥库文件拷贝到Tomcat服务器的conf目录下。
+修改server.xml文件，配置https连接器。
+<Connector port="8443"
+protocol="org.apache.coyote.http11.Http11Protocol"
+maxThreads="150"
+SSLEnabled="true"
+scheme="https"
+secure="true"
+clientAuth="false"
+sslProtocol="TLS"
+keystoreFile="conf/.keystore" 
+keystorePass="123456"/>
+在server.xml文件中配置了一个端口是8443的加密连接器，浏览器访问8443端口的连接器时，
+将会以加密的方式来访问web服务器，这个连接器收到浏览器的请求后，将会向浏览器出示一
+份数字证书，浏览器再用数字证书里面的公钥来加密数据。
+keystoreFile="conf/.keystore" 用来指明密钥库文件的所在路径，服务器从密钥库中提取证
+书时需要密码，keystorePass="123456"指明密钥库的访问密码。
+
+
+
+
+
+
+
+
+
+
+
+
+

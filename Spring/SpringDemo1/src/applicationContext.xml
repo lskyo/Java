@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+
+	<!-- 通过属性注入的方式配置Bean -->
+	<bean id="helloWorld" class="com.lskyo.spring.beans.HelloWorld">
+		<property name="name" value="Lskyo1122"></property>
+	</bean>
+
+	<!-- 通过构造方法注入的方式配置Bean -->
+	<bean id="car" class="com.lskyo.spring.beans.Car">
+		<constructor-arg value="Audi" index="0" />
+		<constructor-arg value="Shanghai" index="1" />
+		<constructor-arg value="300000.0" index="2" />
+	</bean>
+
+	<bean id="car2" class="com.lskyo.spring.beans.Car">
+		<constructor-arg value="Baoma" index="0" type="String" />
+		<constructor-arg index="1" type="String">
+			<!-- 如果包含特殊字符可用<![CDATA[]]> -->
+			<value><![CDATA[<Beijing^>]]></value>
+		</constructor-arg>
+		<constructor-arg value="240" index="2" type="int" />
+	</bean>
+
+	<bean id="person" class="com.lskyo.spring.beans.Person">
+		<property name="name" value="lskyo"></property>
+		<property name="age" value="50"></property>
+		<!-- 法1 <property name="car" ref="car2"></property> -->
+
+		<!-- 法2 <property name="car"> <ref bean="car2"/> </property> -->
+
+		<!-- 法3 -->
+		<property name="car">
+			<bean class="com.lskyo.spring.beans.Car">
+				<constructor-arg value="Ford" />
+				<constructor-arg value="Changan" />
+				<constructor-arg value="200000" type="double" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="person2" class="com.lskyo.spring.beans.Person">
+		<constructor-arg value="Jerry"></constructor-arg>
+		<constructor-arg value="24"></constructor-arg>
+		<!-- <constructor-arg><null/></constructor-arg> -->
+		<constructor-arg ref="car2"></constructor-arg>
+		<!-- 为级联属性赋值 -->
+		<property name="car.price" value="180000"></property>
+	</bean>
+
+	<bean id="person3" class="com.lskyo.spring.beans.collections.Person">
+		<property name="name" value="Mike" />
+		<property name="age" value="15" />
+		<property name="cars">
+			<!-- 为List类型赋值 -->
+			<list>
+				<ref bean="car" />
+				<ref bean="car2" />
+				<bean class="com.lskyo.spring.beans.Car">
+					<constructor-arg value="Ford" />
+					<constructor-arg value="Changan" />
+					<constructor-arg value="200000" type="double" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="newPerson" class="com.lskyo.spring.beans.collections.NewPerson">
+		<property name="name" value="Rose"></property>
+		<property name="age" value="20"></property>
+		<property name="cars">
+			<!-- 为Map类型赋值 -->
+			<map>
+				<entry key="AA" value-ref="car"></entry>
+				<entry key="BB" value-ref="car2"></entry>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="" class="com.lskyo.spring.beans.collections.DataSourse">
+		<property name="properties">
+			<props>
+				<prop key="user">root</prop>
+				<prop key="password">112233</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- 配置集合Bean，供多个Bean进行引用，需导入util命名空间 -->
+	<util:list id="cars">
+		<ref bean="car"/>
+		<ref bean="car2"/>
+	</util:list>
+	
+	<bean id="person4" class="com.lskyo.spring.beans.collections.Person">
+		<property name="name" value="Jack"></property>
+		<property name="age" value="12"></property>
+		<property name="cars" ref="cars"></property>
+	</bean>
+	
+	<!-- 通过p命名空间为bean的属性赋值，需导入p命名空间 -->
+	<bean id="person5" class="com.lskyo.spring.beans.collections.Person" 
+	p:name="Queen" 
+	p:age="40" 
+	p:cars-ref="cars"/>
+</beans>

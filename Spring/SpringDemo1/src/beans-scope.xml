@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<!-- 
+		scope属性可以设置Bean的作用域；值：
+		singleton：默认属性，单例，容器中只含有一个实例，容器启动的时候自动创建实例。
+		prototype：每次调用getBean都会实例化一个新的Bean。
+		
+	 -->
+	<bean id="car" class="com.lskyo.spring.beans.autowire.Car" scope="singleton">
+		<property name="brand" value="Audi"></property>
+		<property name="price" value="180000"></property>
+	</bean>
+
+</beans>

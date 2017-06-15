@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><bookstore>
+<book id="1">
+<name>小王子</name>
+<author>德玛西亚</author>
+<year>1998</year>
+<price>55</price>
+</book>
+<book id="2">
+<name>天才在左疯子在右</name>
+<author>王健林</author>
+<year>2015</year>
+<price>86</price>
+<language>Chinese</language>
+</book>
+</bookstore>

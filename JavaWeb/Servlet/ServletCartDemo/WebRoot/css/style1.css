@@ -1,0 +1,32 @@
+hr{
+  border-color:FF7F00; 
+}
+	   
+img 
+{ 
+	border:0;
+	width:90px;
+	height:60px;
+}
+table { border-collapse:collapse; }
+input { font-size:12px; }
+
+a:link, a:visited { text-decoration: none;}
+a:hover, a:active { text-decoration: none;}
+
+#shopping {text-align:center; margin:0 auto;width: 80%}
+#shopping table { width:80%; line-height:24px; border-top:2px solid #FF7F00; border-bottom:2px solid #FF7F00; }
+#shopping table th { background:#FFE7BA; color:#FF7F00; }
+#shopping table td { padding:10px 0; border-top:1px solid #FF7F00; }
+#shopping table td.thumb img { border:1px solid #dfdfe0; margin:0 10px; vertical-align:middle; }
+#shopping table td.price,
+#shopping table td.number { text-align:center; width:100px; border-left:1px solid #e1e1e1; }
+#shopping table td.price { color:#cc3300; font-weight:bold; }
+#shopping table td.delete { width:60px; text-align:center; border-left:1px solid #e1e1e1; }
+#shopping table td.number span {padding:0 2px;border:1px #c0c0c0 solid;cursor:pointer;}
+#shopping table td.number input { width:20px; border:1px solid #c9c9c9; padding:2px; text-align:center; }
+#shopping .total{height:60px;}
+#shopping .total span{line-height:60px;}
+#shopping .button { text-align:right; padding:10px 0; }
+#shopping .button input { border:0; background:url(../images/bg.png) left -213px; width:144px; height:35px; cursor:pointer; }
+#shopping .shadow { width:500px; margin:50px auto; }

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+<struts>
+	<constant name="struts.devMode" value="true" />
+	<constant name="struts.i18n.encoding" value="UTF-8"/>
+	<package name="default" namespace="/" extends="struts-default">
+		
+		<!-- 
+		<action name="*_Action" class="com.lskyo.action.LoginAction" method="{1}">
+			<result name="success">/success.jsp</result>
+			<result name="error">/error.jsp</result>
+			<result name="input">/login.jsp</result>
+			<result name="register">/register.jsp</result>
+			<result name="message">/message.jsp</result>
+		</action>
+		 -->
+		
+		<interceptors>
+			<interceptor name="registerInterceptor" class="com.lskyo.interceptor.RegisterInterceptor" />
+		</interceptors>
+		
+		<action name="login_Action" class="com.lskyo.action.LoginAction" method="login">
+			<result name="success">/success.jsp</result>
+			<result name="error">/error.jsp</result>
+			<result name="input">/login.jsp</result>
+		</action>
+		
+		<action name="register_Action" class="com.lskyo.action.RegisterAction">
+			<result name="success">/success.jsp</result>
+			<interceptor-ref name="defaultStack"/>
+			<interceptor-ref name="registerInterceptor"/>
+		</action>
+		
+		<action name="message_Action" class="com.lskyo.action.LoginAction" method="message">
+			<result name="message">/message.jsp</result>
+		</action>
+		
+
+	</package>
+</struts>

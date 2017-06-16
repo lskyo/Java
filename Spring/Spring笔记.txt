@@ -119,8 +119,30 @@ AOP 通过切点定位到特定的连接点。类比：连接点相当于数据�
 接点，切点通过 org.springframework.aop.Pointcut 接口进行描述，它使用类和方法作为连接点的查询条件。
 
 
+AspectJ
+Java 社区里最完整最流行的 AOP 框架.
+在 Spring2.0 以上版本中, 可以使用基于 AspectJ 注解或基于 XML 配置的 AOP
 
 
+在 Spring 中启用 AspectJ 注解支持
+要在 Spring 应用中使用 AspectJ 注解, 必须在 classpath 下包含 AspectJ 类库: 
+aopalliance.jar、aspectj.weaver.jar 和 spring-aspects.jar
+将 aop Schema 添加到 <beans> 根元素中.
+要在 Spring IOC 容器中启用 AspectJ 注解支持, 只要在 Bean 配置文件中定义一个空的 XML 元素 <aop:aspectj-autoproxy>
+当 Spring IOC 容器侦测到 Bean 配置文件中的 <aop:aspectj-autoproxy> 元素时, 会自动为与 AspectJ 切面匹配的 Bean 创建代理.
+
+
+用 AspectJ 注解声明切面
+要在 Spring 中声明 AspectJ 切面, 只需要在 IOC 容器中将切面声明为 Bean 实例. 当在 Spring IOC 容器中初始化 AspectJ 切面之后, 
+Spring IOC 容器就会为那些与 AspectJ 切面相匹配的 Bean 创建代理.
+在 AspectJ 注解中, 切面只是一个带有 @Aspect 注解的 Java 类. 
+通知是标注有某种注解的简单的 Java 方法.
+AspectJ 支持 5 种类型的通知注解: 
+@Before: 前置通知, 在方法执行之前执行
+@After: 后置通知, 在方法执行之后执行 
+@AfterRunning: 返回通知, 在方法返回结果之后执行
+@AfterThrowing: 异常通知, 在方法抛出异常之后
+@Around: 环绕通知, 围绕着方法执行
 
 
 

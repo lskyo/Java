@@ -145,6 +145,64 @@ AspectJ 支持 5 种类型的通知注解:
 @Around: 环绕通知, 围绕着方法执行
 
 
+JdbcTemplate简介
+　　Spring对数据库的操作在jdbc上面做了深层次的封装，使用spring的注入功能，可以把DataSource注册到JdbcTemplate之中。
+　　JdbcTemplate位于spring-jdbc-4.3.0.RELEASE.jar中。其全限定命名为org.springframework.jdbc.core.JdbcTemplate。
+    要使用JdbcTemlate还需一个spring-tx-4.3.0.RELEASE.jar这个包包含了一下事务和异常控制
+
+
+JdbcTemplate主要提供以下五类方法：
+1. execute方法：可以用于执行任何SQL语句，一般用于执行DDL语句；
+2. update方法及batchUpdate方法：update方法用于执行新增、修改、删除等语句；
+3. batchUpdate方法用于执行批处理相关语句；
+4. query方法及queryForXXX方法：用于执行查询相关语句；
+5. call方法：用于执行存储过程、函数相关语句。
+
+
+用 @Transactional 注解声明式地管理事务
+1. 为了将方法定义为支持事务处理的, 可以为方法添加 @Transactional 注解。根据 Spring AOP 基于代理机制, 只能标注公有方法。
+2. 可以在方法或者类级别上添加 @Transactional 注解. 当把这个注解应用到类上时, 这个类中的所有公共方法都会被定义成支持事务处理的。
+3. 在 Bean 配置文件中只需要启用 <tx:annotation-driven> 元素, 并为之指定事务管理器就可以了。
+4. 如果事务处理器的名称是 transactionManager, 就可以在<tx:annotation-driven> 元素中省略 transaction-manager 属性。这个元素会自动检测该名称的事务处理器。
+
+
+事务传播属性
+1. 当事务方法被另一个事务方法调用时, 必须指定事务应该如何传播. 例如: 方法可能继续在现有事务中运行, 也可能开启一个新事务, 并在自己的事务中运行.
+2. 事务的传播行为可以由传播属性指定. Spring 定义了 7  种类传播行为:
+REQUIRED：如果有事务在运行，当前的这个方法就在事务内运行，否则，就开启一个新的事务，并在自己的事务内运行。
+REQUIRED_NEW：当前的方法必须开启新事务，并在它自己的事务内运行。如果有事务正在运行，应该将它挂起。
+SUPPORTS：如果有事务在运行，当前的方法就在这个事务内运行。否则它可以不运行在事务中。
+NOT_SUPPORTED：当前的方法不应该运行在事务中。如果有运行的事务，应该将它挂起。
+MANDATORY：当前的方法必须运行在事务内部，如果没有正在运行的事务，就抛出异常。
+NEVER：当前的方法不应该运行在十五中，如果有运行的事务，就抛出异常。
+NESTED：如果有事务在运行，当前的方法就应该在这个事务的嵌套事务内运行，否则，就开启一个新的事务，并在它自己的事务内运行。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

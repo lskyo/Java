@@ -34,6 +34,7 @@ Jsp声明：
 <%! Java代码; %>
 Jsp表达式：
 <%=表达式 %>
+
 Jsp内置对象：
 一、out对象
 out对象是JspWriter类的实例，是向客户端输出内容常用的对象。
@@ -46,6 +47,7 @@ out对象是JspWriter类的实例，是向客户端输出内容常用的对象�
 6.int getRemaining();返回缓冲区还剩多少可用
 7.boolean isAutoFlush();返回缓冲区满时，是自动清空还是抛出异常
 8.void close();关闭输出流
+
 二、request对象
 客户端请求的信息被封装在request对象中，通过它才能了解到客户端的需求，然后做出响应。它是httpServletRequest类的实例。request对象具有请求域，即完成客户端的请求之前，该对象一直有效。
 常用方法：
@@ -64,6 +66,7 @@ out对象是JspWriter类的实例，是向客户端输出内容常用的对象�
 13.String getRealPath(String path);返回一虚拟路径的真实路径
 14.String request.getContextPath();返回上下文路径
 15.void request.setCharacterEncoding(String name);设置request的字符集编码
+
 三、response对象
 response对象包含了响应客户端的有关信息，但在Jsp中很少直接用到它。它是HttpServletResponse类的实例。response对象具有页面作用域，即访问一个页面时该页面内的response对象只能对这次访问有效，其他页面的response对象对当前页面无效。
 常用方法：
@@ -71,6 +74,7 @@ response对象包含了响应客户端的有关信息，但在Jsp中很少直接
 2.void setContentType(String type);设置响应的MIME类型
 3.PrintWriter getWriter();返回可以向客户端输出字符的一个对象
 4.void sendRedirect(java.lang.String location);重新定向客户端的请求
+
 四、session对象
 session对象是一个Jsp内置对象，在第一个Jsp页面被装载时自动创建，完成会话期的管理。从一个客户打开浏览器并连接到服务器开始，到客户关闭浏览器离开这个服务器结束，被称为一个会话。当一个客户访问一个服务器时，可能会在服务器的几个页面之间切换，服务器应当通过某种办法知道这是一个客户，就需要session对象。session对象HttpSession类的实例。
 常用方法：
@@ -87,6 +91,7 @@ Session的销毁有三种方式：1、调用session.invalidate()方法；2、Ses
 <session-config>
 	<session-timeout>10</session-timeout>
 </session-config>
+
 五、application对象
 application对象实现了用户间的数据的共享，可存放全局变量。application开始于服务器的启动，终止于服务器的关闭。在用户的前后连接或不同用户之间的连接中，可以对application对象的同一属性进行操作。在任何地方对application对象属性的操作，都将影响到其他用户对此的访问。application对象时ServletContext类的实例。
 常用方法：
@@ -94,6 +99,7 @@ application对象实现了用户间的数据的共享，可存放全局变量。
 2.public Object getAttribute(String name);返回与此对话中的指定名称绑定在一起的对象，如果没有对象绑定在该名称下，则返回null。
 3.Enumeration getAttributeNames();返回所有可用属性名的枚举。
 4.String getServerInfo();返回Jsp(SERVLET)引擎名及版本号。
+
 六、page对象
 page对象就是指向当前Jsp页面本身，有点像类中的this指针，它是java.lang.Object类的实例。
 常用方法：
@@ -107,6 +113,7 @@ page对象就是指向当前Jsp页面本身，有点像类中的this指针，它
 8.void notifyAll();唤醒所有等待的线程
 9.void wait(int timeout);使一个线程处于等待直到timeout结束或被唤醒
 10.void wait();使一个线程处于等待直到被唤醒
+
 七、pageContext对象
 pageContext对象提供了对Jsp页面内所有对象以及名字空间的访问。pageContext对象可以访问到本页所在的session，也可以取本页面所在的application的某一属性值。pageContext对象的本类名也叫pageContext。
 常用方法：
@@ -120,12 +127,14 @@ pageContext对象提供了对Jsp页面内所有对象以及名字空间的访问
 8.int getAttributeScope(String name);返回某属性的作用范围
 9.void forward(String relativeUrlPath);使当前页面重导到另一页面
 10.void include(String relativeUrlPath);在当前位置包含另一文件
+
 八、Config对象
 config对象是在一个Servlet初始化时，Jsp引擎向它传递信息用的，此信息包括Servlet初始化时所要用到的参数（通过属性名和属性值构成）以及服务器的有关信息（通过传递一个ServletContext对象）
 常用方法：
 1.ServletContext getServletContext();返回含有服务器相关信息的ServletContext对象
 2.String getInitParamter(String name);返回初始化参数的值
 3.Enumeration getInitParameterNames();返回Servlet初始化所需所有参数的枚举
+
 九、Exception对象
 exception对象是一个异常对象，当一个页面在运行时过程中发生了异常，就产生这个对象。如果一个Jsp页面要应用此对象，就必须把isErrorPage设为true，否则无法编译。他实际上是java.lang.Throwable的对象。
 常用方法：

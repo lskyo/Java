@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+
+	<context:component-scan base-package="com.lskyo.springmvc"></context:component-scan>
+
+
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+	
+	
+	<!--  
+		default-servlet-handler 将在 SpringMVC 上下文中定义一个 DefaultServletHttpRequestHandler,
+		它会对进入 DispatcherServlet 的请求进行筛查, 如果发现是没有经过映射的请求, 就将该请求交由 WEB 应用服务器默认的 
+		Servlet 处理. 如果不是静态资源的请求，才由 DispatcherServlet 继续处理
+
+		一般 WEB 应用服务器默认的 Servlet 的名称都是 default.
+		若所使用的 WEB 服务器的默认 Servlet 名称不是 default，则需要通过 default-servlet-name 属性显式指定
+		
+	<mvc:annotation-driven></mvc:annotation-driven>
+		 
+	-->
+	<mvc:default-servlet-handler/>
+	<mvc:annotation-driven conversion-service="conversionService"></mvc:annotation-driven>
+	
+	
+	<!-- 配置 ConversionService:自定义类型转换器 -->
+	<bean id="conversionService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<ref bean="employeeConverter"/>
+			</set>
+		</property>
+	</bean>
+	
+	<!-- 配置国际化资源文件 -->
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="i18n"></property>
+	</bean>
+	
+	<!-- 
+	<mvc:view-controller path="/i18n" view-name="i18n"/>
+	 -->
+	<mvc:view-controller path="/i18n2" view-name="i18n2"/>
+	
+	<!-- 配置 SessionLocalResolver -->
+	<bean id="localeResolver" 
+		class="org.springframework.web.servlet.i18n.SessionLocaleResolver"></bean>
+	
+	
+	<mvc:interceptors>
+		<!-- 配置自定义的拦截器 -->
+		<bean class="com.lskyo.springmvc.interceptors.FirstInterceptor"></bean>
+		
+		<!-- 配置拦截器以及拦截器（不）作用路径 -->
+		<mvc:interceptor>
+			<mvc:mapping path="/emps"/>
+			<bean class="com.lskyo.springmvc.interceptors.SecondInterceptor"></bean>
+		</mvc:interceptor>
+		
+		
+		<!-- 配置 LocaleChanceInterceptor -->
+		<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"></bean>
+	</mvc:interceptors>
+	
+	
+	
+	<!-- 配置 MutlipartResolver -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<property name="maxUploadSize" value="1024000"></property>
+	</bean>
+	
+	
+	
+	<!-- 使用 SimpleMappingExceptionResolver 来映射异常 -->
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionMappings">
+			<props>
+				<prop key="java.lang.ArrayIndexOutOfBoundsException">error</prop>
+			</props>
+		</property>
+	</bean>
+	
+	
+	
+	
+</beans>

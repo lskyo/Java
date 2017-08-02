@@ -1,0 +1,118 @@
+MyBatis简介
+MyBatis 是支持定制化SQL、存储过程以及高级映射的优秀的持久层框架。
+MyBatis 避免了几乎所有的JDBC 代码和手动设置参数以及获取结果集。
+MyBatis可以使用简单的XML或注解用于配置和原始映射，将接口和Java的POJO（Plain Old Java Objects，普通的Java对象）映射成数据库中的记录。
+
+MyBatis历史
+原是Apache的一个开源项目iBatis, 2010年6月这个项目由Apache Software Foundation 迁移到了Google Code，随着开发团队转投Google Code旗下，iBatis3.x正式更名为MyBatis ，代码于2013年11月迁移到Github。
+iBatis一词来源于“internet”和“abatis”的组合，是一个基于Java的持久层框架。iBatis提供的持久层框架包括SQL Maps和Data Access Objects（DAO）
+
+
+为什么要使用MyBatis
+1. MyBatis是一个半自动化的持久化层框架。
+    JDBC
+	–SQL夹在Java代码块里，耦合度高导致硬编码内伤
+	–维护不易且实际开发需求中sql是有变化，频繁修改的情况多见
+    Hibernate和JPA
+	–长难复杂SQL，对于Hibernate而言处理也不容易
+	–内部自动生产的SQL，不容易做特殊优化。
+	–基于全映射的全自动框架，大量字段的POJO进行部分映射时比较困难。导致数据库性能下降。
+2. 对开发人员而言，核心sql还是需要自己优化
+3. sql和java编码分开，功能边界清晰，一个专注业务、一个专注数据。
+
+
+使用流程：
+1、根据xml配置文件（全局配置文件）创建一个SqlSessionFactory对象 有数据源一些运行环境信息
+2、sql映射文件；配置了每一个sql，以及sql的封装规则等。 
+3、将sql映射文件注册在全局配置文件中
+4、写代码：
+		1）、根据全局配置文件得到SqlSessionFactory；
+		2）、使用sqlSession工厂，获取到sqlSession对象使用他来执行增删改查
+			一个sqlSession就是代表和数据库的一次会话，用完关闭
+		3）、使用sql的唯一标志来告诉MyBatis执行哪个sql。sql都是保存在sql映射文件中的。
+
+
+
+1、接口式编程
+ 	原生：		Dao		====>  DaoImpl
+	mybatis：	Mapper	====>  xxMapper.xml
+ 
+2、SqlSession代表和数据库的一次会话；用完必须关闭；
+3、SqlSession和connection一样她都是非线程安全。每次使用都应该去获取新的对象。
+4、mapper接口没有实现类，但是mybatis会为这个接口生成一个代理对象。
+		（将接口和xml进行绑定）
+		EmployeeMapper empMapper =	sqlSession.getMapper(EmployeeMapper.class);
+5、两个重要的配置文件：
+		mybatis的全局配置文件：包含数据库连接池信息，事务管理器信息等...系统运行环境信息
+		sql映射文件：保存了每一个sql语句的映射信息：
+					将sql抽取出来。	
+
+SqlSession
+1. SqlSession 的实例不是线程安全的，因此是不能被共享的。
+2. SqlSession每次使用完成后需要正确关闭，这个关闭操作是必须的
+3. SqlSession可以直接调用方法的id进行数据库操作，但是我们一般还是推荐使用SqlSession获取到Dao接口的代理类，执行代理对象的方法，可以更安全的进行类型检查操作
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

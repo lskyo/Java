@@ -52,6 +52,9 @@ SqlSession
 2. SqlSession每次使用完成后需要正确关闭，这个关闭操作是必须的
 3. SqlSession可以直接调用方法的id进行数据库操作，但是我们一般还是推荐使用SqlSession获取到Dao接口的代理类，执行代理对象的方法，可以更安全的进行类型检查操作
 
+
+
+一、全局配置文件
 1、mybatis可以使用properties来引入外部properties配置文件的内容：
 resource：引入类路径下的资源；
 url：引入网络路径或者磁盘路径下的资源；
@@ -74,24 +77,54 @@ setting:用来设置每一个设置项
 （2）package:为某个包下的所有类批量起别名 
 	name：指定包名（为当前包以及下面所有的后代包的每一个类都起一个默认别名（类名小写））
 （3）批量起别名的情况下，使用@Alias注解为某个类型指定新的别名
+值得注意的是，MyBatis已经为许多常见的Java 类型内建了相应的类型别名。它们都是大小写不敏感的，我们在起别名的时候千万不要占用已有的别名。
 
+typeHandlers类型处理器
+无论是MyBatis 在预处理语句（PreparedStatement）中设置一个参数时，还是从结果集中取出一个值时，都会用类型处理器将获取的值以合适的方式转换成Java 类型。
+
+日期类型的处理
+日期和时间的处理，JDK1.8以前一直是个头疼的问题。我们通常使用JSR310规范领导者Stephen Colebourne创建的Joda-Time来操作。1.8已经实现全部的JSR310规范了。
+日期时间处理上，我们可以使用MyBatis基于JSR310（Date and Time API）编写的各种日期时间类型处理器。
+MyBatis3.4以前的版本需要我们手动注册这些处理器，以后的版本都是自动注册的。
+
+自定义类型处理器
+我们可以重写类型处理器或创建自己的类型处理器来处理不支持的或非标准的类型。
+步骤：
+1）实现org.apache.ibatis.type.TypeHandler接口或者继承org.apache.ibatis.type.BaseTypeHandler
+2）指定其映射某个JDBC类型（可选操作）
+3）在mybatis全局配置文件中注册
+
+plugins插件
+插件是MyBatis提供的一个非常强大的机制，我们可以通过插件来修改MyBatis的一些核心行为。插件通过动态代理机制，可以介入四大对象的任何一个方法的执行。
+Executor(update, query, flushStatements, commit, rollback, getTransaction, close, isClosed);
+ParameterHandler(getParameterObject, setParameters);
+ResultSetHandler(handleResultSets, handleOutputParameters);
+StatementHandler(prepare, parameterize, batch, update, query);
 
 4、environments：环境们，mybatis可以配置多种环境 ,default指定使用某种环境。可以达到快速切换环境。
 	environment：配置一个具体的环境信息；必须有两个标签；id代表当前环境的唯一标识
 		transactionManager：事务管理器；
-		type：事务管理器的类型;JDBC(JdbcTransactionFactory)|MANAGED(ManagedTransactionFactory)
+		type：事务管理器的类型:JDBC(JdbcTransactionFactory)使用了JDBC 的提交和回滚设置，依赖于从数据源得到的连接来管理事务范围。
+					|MANAGED(ManagedTransactionFactory)不提交或回滚一个连接、让容器来管理事务的整个生命周期（比如JEE 应用服务器的上下文）。
 		自定义事务管理器：实现TransactionFactory接口.type指定为全类名		
 	dataSource：数据源;
-		type:数据源类型;UNPOOLED(UnpooledDataSourceFactory)
-					|POOLED(PooledDataSourceFactory)
-					|JNDI(JndiDataSourceFactory)
+		type:数据源类型;UNPOOLED(UnpooledDataSourceFactory)不使用连接池
+					|POOLED(PooledDataSourceFactory)使用连接池
+					|JNDI(JndiDataSourceFactory)在EJB 或应用服务器这类容器中查找指定的数据源
 		自定义数据源：实现DataSourceFactory接口，type是全类名
+		实际开发中我们使用Spring管理数据源，并进行事务控制的配置来覆盖上述配置
+
 
 5、databaseIdProvider：支持多数据库厂商的；
 	type="DB_VENDOR"：VendorDatabaseIdProvider
 	 	作用就是得到数据库厂商的标识(驱动getDatabaseProductName())，mybatis就能根据数据库厂商标识来执行不同的sql;
 	 	MySQL，Oracle，SQL Server,xxxx
 
+MyBatis匹配规则如下：
+1、如果没有配置databaseIdProvider标签，那么databaseId=null;
+2、如果配置了databaseIdProvider标签，使用标签配置的name去匹配数据库信息，匹配上设置databaseId=配置指定的值，否则依旧为null;
+3、如果databaseId不为null，他只会找到配置databaseId的sql语句;
+4、MyBatis 会加载不带databaseId属性和带有匹配当前数据库databaseId 属性的所有语句。如果同时找到带有databaseId 和不带databaseId 的相同语句，则后者会被舍弃。
 
 6、mappers：将sql映射注册到全局配置中
 	mapper:注册一个sql映射 
@@ -112,32 +145,95 @@ setting:用来设置每一个设置项
 	package:批量注册
 
 
+二、mapper映射文件
+1、select标签属性：
+	id：唯一标识符。用来引用这条语句，需要和接口的方法名一致。
+	parameterType：会将传入这条语句的参数类的完全限定名或别名。这个属性是可选的，因为MyBatis可以通过TypeHandler推断出具体传入语句的参数，默认值为unset。
+	resultType：从这条语句中返回的期望类型的类的完全限定名或别名。注意如果是集合，那应该是集合可以包含的类型，而不能是集合本身。该属性和resultMap不能同时使用。
+	resultMap：外部resultMap的命名引用，和resultType不能同时使用。
+	timeout：这个设置是在抛出异常之前，驱动程序等待数据库返回请求结果的秒数。默认值为unset（依赖驱动）。
+	fetchSize：影响驱动程序每次批量返回的结果行数。默认值为unset（依赖驱动）。
+	databaseId：如果配置了databaseIdProvider，MyBatis会加载所有的不带databaseId或匹配当前databaseId的语句；如果带或者不带的语句都有，则不带的会被忽略。
+	flushCache：将其设置为true，任何时候只要语句被调用，都会导致本地缓存和二级缓存都会被清空。默认值：false。
+	useCache：将其设置为true，将会导致本条语句的结果被二级缓存，默认值：对select元素为true。
+	statementType：STATEMENT、PREPARED或CALLABLE的一个，这会让MyBatis分别使用Statement、PreparedStatement或CallableStatement，默认值：PREPARED。
+	resultSetType：FORWARD_ONLY，SCROLL_SENSITIVE或SCROLL_INSENSITIVE中的一个，默认值为unset（依赖驱动）
+	resultOrdered：这个设置仅针对嵌套结果select语句适用：如果为true，就假设包含了嵌套结果集或是分组，这样当返回一个主结果行，就不会发生有对面前结果集引用的情况。这就使得在获取嵌套的结果集的时候不至于导致内存不够用。默认值：false。
+	resultSets：这个设置仅对多结果集的情况适用，它将列出语句执行后返回的结果集并每个结果集给一个名称，名称是逗号分隔的。
 
 
+主键生成方式
+若数据库支持自动生成主键的字段（比如MySQL 和SQL Server），则可以设置useGeneratedKeys=”true”，然后再把keyProperty设置到目标属性上。
+而对于不支持自增型主键的数据库（例如Oracle），则可以使用selectKey子元素：selectKey 元素将会首先运行，id 会被设置，然后插入语句会被调用。
 
 
+参数（Parameters）传递
+单个参数
+–可以接受基本类型，对象类型，集合类型的值。这种情况MyBatis可直接使用这个参数，不需要经过任何处理。
+多个参数
+–任意多个参数，都会被MyBatis重新包装成一个Map传入。Map的key是param1，param2，0，1…，值就是参数的值。
+命名参数
+–为参数使用@Param起一个名字，MyBatis就会将这些参数封装进map中，key就是我们自己指定的名字。
+POJO
+–当这些参数属于我们业务POJO时，我们直接传递POJO。
+Map
+–我们也可以封装多个参数为map，直接传递。
 
 
+参数处理
+参数也可以指定一个特殊的数据类型：
+	#{ property, javaType = int, jdbcType = NUMERIC }
+	#{ height, javaType = double, jdbcType = NUMERIC, numericScale = 2 }
+–javaType 通常可以从参数对象中来去确定；
+–如果null 被当作值来传递，对于所有可能为空的列，jdbcType 需要被设置；
+–对于数值类型，还可以设置小数点后保留的位数；
+–mode 属性允许指定IN，OUT 或INOUT 参数。如果参数为OUT 或INOUT，参数对象属性的真实值将会被改变，就像在获取输出参数时所期望的那样。
+参数位置支持的属性：javaType、jdbcType、mode、numericScale、resultMap、typeHandler、jdbcTypeName、expression
+实际上通常被设置的是：可能为空的列名指定jdbcType
+#{key}：获取参数的值，预编译到SQL中。安全。
+${key}：获取参数的值，拼接到SQL中。有SQL注入问题：ORDER BY ${name}
 
 
+结果自动映射
+1、全局setting设置
+–autoMappingBehavior默认是PARTIAL，开启自动映射的功能。唯一的要求是列名和javaBean属性名一致
+–如果autoMappingBehavior设置为null则会取消自动映射
+–数据库字段命名规范，POJO属性符合驼峰命名法，如A_COLUMN?aColumn，我们可以开启自动驼峰命名规则映射功能，mapUnderscoreToCamelCase=true。
+2、自定义resultMap，实现高级结果集映射。
 
 
+resultMap自定义结果集映射规则
+1. constructor-类在实例化时, 用来注入结果到构造方法中
+–idArg-ID 参数; 标记结果作为ID 可以帮助提高整体效能
+–arg-注入到构造方法的一个普通结果
+2. id–一个ID 结果; 标记结果作为ID 可以帮助提高整体效能
+3. result–注入到字段或JavaBean 属性的普通结果
+	id 和result 映射一个单独列的值到简单数据类型(字符串,整型,双精度浮点数,日期等)的属性或字段。
+	property：映射到列结果的字段或属性。
+	column：数据表的列名。通常和resultSet.getString(columnName)的返回值一致。
+	javaType：一个Java类的完全限定名，或一个类型别名。如果映射到一个JavaBean，MyBatis通常可以断定类型。
+	jdbcType：JDBC类型是仅仅需要对插入，更新和删除操作可能为空的列进行处理。
+	typeHandler：类型处理器。这个属性，可以覆盖默认的类型处理器。这个属性值是类的完全限定名或是一个类型处理器的实现，或者是类型别名。
+4. association–一个复杂的类型关联;许多结果将包成这种类型，我们可以使用联合查询，并以级联属性的方式封装对象。
+	select：调用目标的方法查询当前属性的值
+	column：将指定列的值传入目标方法
+–嵌入结果映射–结果映射自身的关联,或者参考一个
+5. collection–复杂类型的集
+–嵌入结果映射–结果映射自身的集,或者参考一个
+6. discriminator–使用结果值来决定使用哪个结果映射
+–case–基于某些值的结果映射
+  嵌入结果映射–这种情形结果也映射它本身,因此可以包含很多相同的元素,或者它可以参照一个外部的结果映射。
 
+开启延迟加载和属性按需加载：
+<settings>
+	<setting name="lazyLoadingEnabled" value="true"/>
+	<setting name="aggressiveLazyLoading" value="false"/>
+</settings>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+扩展-多列值封装map传递
+分步查询的时候通过column指定，将对应的列的数据传递过去，我们有时需要传递多列数据；
+使用{key1=column1,key2=column2…}的形式；
+association或者collection标签的fetchType=eager/lazy可以覆盖全局的延迟加载策略，指定立即加载（eager）或者延迟加载（lazy）。
 
 
 

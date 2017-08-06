@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lskyo.mybatis.dao.EmployeeMapper">
+	
+	<cache type="org.mybatis.caches.ehcache.EhcacheCache"></cache>
+
+	<!-- <cache eviction="FIFO" flushInterval="60000" readOnly="false" size="1024"></cache> -->
+	<!--  
+	eviction:缓存的回收策略：
+		• LRU – 最近最少使用的：移除最长时间不被使用的对象。
+		• FIFO – 先进先出：按对象进入缓存的顺序来移除它们。
+		• SOFT – 软引用：移除基于垃圾回收器状态和软引用规则的对象。
+		• WEAK – 弱引用：更积极地移除基于垃圾收集器状态和弱引用规则的对象。
+		• 默认的是 LRU。
+	flushInterval：缓存刷新间隔
+		缓存多长时间清空一次，默认不清空，设置一个毫秒值
+	readOnly:是否只读：
+		true：只读；mybatis认为所有从缓存中获取数据的操作都是只读操作，不会修改数据。
+				 mybatis为了加快获取速度，直接就会将数据在缓存中的引用交给用户。不安全，速度快
+		false：非只读：mybatis觉得获取的数据可能会被修改。
+				mybatis会利用序列化&反序列的技术克隆一份新的数据给你。安全，速度慢
+	size：缓存存放多少元素；
+	type=""：指定自定义缓存的全类名；
+			实现Cache接口即可；
+	-->
+
+
+
+	<!-- 
+	namespace:名称空间;指定为接口的全类名
+	id：唯一标识
+	resultType：返回值类型
+	#{id}：从传递过来的参数中取出id值
+	
+	public Employee getEmpById(Integer id);
+	 -->
+	<select id="getEmpById" resultType="emp">
+		select * from tbl_employee where id = #{id}
+	</select>
+	
+	<select id="getEmpById" resultType="emp"
+		databaseId="mysql">
+		select * from tbl_employee where id = #{id}
+	</select>
+	<select id="getEmpById" resultType="emp"
+		databaseId="oracle">
+		select EMPLOYEE_ID id,LAST_NAME	lastName,EMAIL email 
+		from employees where EMPLOYEE_ID=#{id}
+	</select>
+	
+	
+	<!-- public Employee getEmpByIdAndLastName(@Param("id") Integer id, @Param("lastName") String lastName); -->
+	<select id="getEmpByIdAndLastName" resultType="emp">
+		select * from tbl_employee where id=#{id} and last_name=#{lastName}
+	</select>
+	
+	<!-- public Employee getEmpByMap(Map<String, Object> map); -->
+	<select id="getEmpByMap" resultType="emp">
+		select * from ${tableName} where id=#{id} and last_name=#{lastName}
+	</select>
+	
+	<!-- public List<Employee> getEmpsByLastNameLike(String lastName); -->
+	<!--resultType：如果返回的是一个集合，要写集合中元素的类型  -->
+	<select id="getEmpsByLastNameLike" resultType="emp">
+		select * from tbl_employee where last_name like #{lastName}
+	</select>
+	
+	<!-- public Map<String, Object> getEmpByIdReturnMap(Integer id); -->
+	<select id="getEmpByIdReturnMap" resultType="map">
+		select * from tbl_employee where id=#{id}
+	</select>
+	
+	<!-- public Map<Integer, Employee> getEmpsByLastNameLikeReturnMap(String lastName); -->
+	<select id="getEmpsByLastNameLikeReturnMap" resultType="emp">
+		select * from tbl_employee where last_name like #{lastName}
+	</select>
+	
+	
+	
+	<!-- parameterType：参数类型，可以省略， 
+	获取自增主键的值：
+		mysql支持自增主键，自增主键值的获取，mybatis也是利用statement.getGenreatedKeys()；
+		useGeneratedKeys="true"；使用自增主键获取主键值策略
+		keyProperty；指定对应的主键属性，也就是mybatis获取到主键值以后，将这个值封装给javaBean的哪个属性
+	-->
+	<insert id="addEmp" parameterType="emp"
+		useGeneratedKeys="true" keyProperty="id" databaseId="mysql">
+		insert into tbl_employee(last_name,email,gender) 
+		values(#{lastName},#{email},#{gender})
+	</insert>
+	
+	<!-- 
+	获取非自增主键的值：
+		Oracle不支持自增；Oracle使用序列来模拟自增；
+		每次插入的数据的主键是从序列中拿到的值；如何获取到这个值；
+	 -->
+	<insert id="addEmp" databaseId="oracle">
+		<!-- 
+		keyProperty:查出的主键值封装给javaBean的哪个属性
+		order="BEFORE":当前sql在插入sql之前运行
+			   AFTER：当前sql在插入sql之后运行
+		resultType:查出的数据的返回值类型
+		
+		BEFORE运行顺序：
+			先运行selectKey查询id的sql；查出id值封装给javaBean的id属性
+			再运行插入的sql；就可以取出id属性对应的值
+		AFTER运行顺序：
+			先运行插入的sql（从序列中取出新值作为id）；
+			再运行selectKey查询id的sql；
+		 -->
+		<selectKey keyProperty="id" order="BEFORE" resultType="Integer">
+			<!-- 编写查询主键的sql语句 -->
+			<!-- BEFORE-->
+			select EMPLOYEES_SEQ.nextval from dual 
+			<!-- AFTER：
+			 select EMPLOYEES_SEQ.currval from dual -->
+		</selectKey>
+		
+		<!-- 插入时的主键是从序列中拿到的 -->
+		<!-- BEFORE:-->
+		insert into employees(EMPLOYEE_ID,LAST_NAME,EMAIL) 
+		values(#{id},#{lastName},#{email<!-- ,jdbcType=NULL -->}) 
+		<!-- AFTER：
+		insert into employees(EMPLOYEE_ID,LAST_NAME,EMAIL) 
+		values(employees_seq.nextval,#{lastName},#{email}) -->
+	</insert>
+	
+	<update id="updateEmp">
+		update tbl_employee 
+		set last_name=#{lastName},
+		email=#{email},
+		gender=#{gender} 
+		where id=#{id}
+	</update>
+	
+	<delete id="deleteEmpById">
+		delete from tbl_employee where id=#{id}
+	</delete>
+</mapper>

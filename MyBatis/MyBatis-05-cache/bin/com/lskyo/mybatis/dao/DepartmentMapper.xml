@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lskyo.mybatis.dao.DepartmentMapper">
+	<!-- 引用缓存 -->
+	<cache-ref namespace="com.lskyo.mybatis.dao.EmployeeMapper"/>
+
+	<!-- public Department getDeptById(Integer id); -->
+	<select id="getDeptById" resultType="department">
+		select id,dept_name departmentName from tbl_dept where id = #{id}
+	</select>
+	
+	
+	
+	<!-- 
+	场景二：
+		嵌套结果集的方式，使用collection标签定义关联的集合类型的属性封装规则  -->
+	<resultMap type="department" id="MyDeptPlus">
+		<id column="did" property="id"/>
+		<result column="dept_name" property="departmentName"/>
+		<!-- 
+			collection定义关联集合类型的属性的封装规则 
+			ofType:指定集合里面元素的类型
+		-->
+		<collection property="emps" ofType="emp">
+			<!-- 定义这个集合中元素的封装规则 -->
+			<id column="eid" property="id"/>
+			<result column="last_name" property="lastName"/>
+			<result column="email" property="email"/>
+			<result column="gender" property="gender"/>
+		</collection>
+	</resultMap>
+	
+	<!-- public Department getDeptByIdPlus(Integer id); -->
+	<select id="getDeptByIdPlus" resultMap="MyDeptPlus">
+		SELECT d.id did, dept_name dept_name, 
+			e.id eid, e.last_name last_name, e.email email, e.gender gender 
+		FROM tbl_dept d 
+		LEFT JOIN tbl_employee e 
+		ON d.id=e.d_id 
+		WHERE d.id=#{id}
+	</select>
+	
+	
+	<resultMap type="department" id="MyDeptStep">
+		<id column="id" property="id"/>
+		<result column="dept_name" property="departmentName"/>
+		<collection property="emps" 
+		select="com.lskyo.mybatis.dao.EmployeeMapperPlus.getEmpsByDeptId"
+		column="id"
+		fetchType="eager"></collection>	
+	</resultMap>
+	
+	<!-- public Department getDeptByIdStep(Integer id); -->
+	<select id="getDeptByIdStep" resultMap="MyDeptStep">
+		select id,dept_name from tbl_dept where id=#{id}
+	</select>
+	
+	<!-- 扩展：多列的值传递过去：
+			将多列的值封装map传递；
+			column="{key1=column1,key2=column2}"
+		fetchType="lazy"：表示使用延迟加载；
+				- lazy：延迟
+				- eager：立即
+	 -->
+	
+</mapper>

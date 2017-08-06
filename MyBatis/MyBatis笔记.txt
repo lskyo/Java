@@ -1,252 +1,252 @@
-MyBatis���
-MyBatis ��֧�ֶ��ƻ�SQL���洢�����Լ��߼�ӳ�������ĳ־ò��ܡ�
-MyBatis �����˼������е�JDBC ������ֶ����ò����Լ���ȡ�������
-MyBatis����ʹ�ü򵥵�XML��ע���������ú�ԭʼӳ�䣬���ӿں�Java��POJO��Plain Old Java Objects����ͨ��Java����ӳ������ݿ��еļ�¼��
+﻿MyBatis简介
+MyBatis 是支持定制化SQL、存储过程以及高级映射的优秀的持久层框架。
+MyBatis 避免了几乎所有的JDBC 代码和手动设置参数以及获取结果集。
+MyBatis可以使用简单的XML或注解用于配置和原始映射，将接口和Java的POJO（Plain Old Java Objects，普通的Java对象）映射成数据库中的记录。
 
-MyBatis��ʷ
-ԭ��Apache��һ����Դ��ĿiBatis, 2010��6�������Ŀ��Apache Software Foundation Ǩ�Ƶ���Google Code�����ſ����Ŷ�תͶGoogle Code���£�iBatis3.x��ʽ����ΪMyBatis ��������2013��11��Ǩ�Ƶ�Github��
-iBatisһ����Դ�ڡ�internet���͡�abatis������ϣ���һ������Java�ĳ־ò��ܡ�iBatis�ṩ�ĳ־ò��ܰ���SQL Maps��Data Access Objects��DAO��
+MyBatis历史
+原是Apache的一个开源项目iBatis, 2010年6月这个项目由Apache Software Foundation 迁移到了Google Code，随着开发团队转投Google Code旗下，iBatis3.x正式更名为MyBatis ，代码于2013年11月迁移到Github。
+iBatis一词来源于“internet”和“abatis”的组合，是一个基于Java的持久层框架。iBatis提供的持久层框架包括SQL Maps和Data Access Objects（DAO）
 
 
-ΪʲôҪʹ��MyBatis
-1. MyBatis��һ�����Զ����ĳ־û����ܡ�
+为什么要使用MyBatis
+1. MyBatis是一个半自动化的持久化层框架。
     JDBC
-	�CSQL����Java��������϶ȸߵ���Ӳ��������
-	�Cά��������ʵ�ʿ���������sql���б仯��Ƶ���޸ĵ�������
-    Hibernate��JPA
-	�C���Ѹ���SQL������Hibernate���Դ���Ҳ������
-	�C�ڲ��Զ�������SQL���������������Ż���
-	�C����ȫӳ���ȫ�Զ���ܣ������ֶε�POJO���в���ӳ��ʱ�Ƚ����ѡ��������ݿ������½���
-2. �Կ�����Ա���ԣ�����sql������Ҫ�Լ��Ż�
-3. sql��java����ֿ������ܱ߽�������һ��רעҵ��һ��רע���ݡ�
+	–SQL夹在Java代码块里，耦合度高导致硬编码内伤
+	–维护不易且实际开发需求中sql是有变化，频繁修改的情况多见
+    Hibernate和JPA
+	–长难复杂SQL，对于Hibernate而言处理也不容易
+	–内部自动生产的SQL，不容易做特殊优化。
+	–基于全映射的全自动框架，大量字段的POJO进行部分映射时比较困难。导致数据库性能下降。
+2. 对开发人员而言，核心sql还是需要自己优化
+3. sql和java编码分开，功能边界清晰，一个专注业务、一个专注数据。
 
 
-ʹ�����̣�
-1������xml�����ļ���ȫ�������ļ�������һ��SqlSessionFactory���� ������ԴһЩ���л�����Ϣ
-2��sqlӳ���ļ���������ÿһ��sql���Լ�sql�ķ�װ����ȡ� 
-3����sqlӳ���ļ�ע����ȫ�������ļ���
-4��д���룺
-		1��������ȫ�������ļ��õ�SqlSessionFactory��
-		2����ʹ��sqlSession��������ȡ��sqlSession����ʹ������ִ����ɾ�Ĳ�
-			һ��sqlSession���Ǵ��������ݿ��һ�λỰ������ر�
-		3����ʹ��sql��Ψһ��־������MyBatisִ���ĸ�sql��sql���Ǳ�����sqlӳ���ļ��еġ�
+使用流程：
+1、根据xml配置文件（全局配置文件）创建一个SqlSessionFactory对象 有数据源一些运行环境信息
+2、sql映射文件；配置了每一个sql，以及sql的封装规则等。 
+3、将sql映射文件注册在全局配置文件中
+4、写代码：
+		1）根据全局配置文件得到SqlSessionFactory；
+		2）使用sqlSession工厂，获取到sqlSession对象使用他来执行增删改查
+			一个sqlSession就是代表和数据库的一次会话，用完关闭
+		3）使用sql的唯一标志来告诉MyBatis执行哪个sql。sql都是保存在sql映射文件中的。
 
 
 
-1���ӿ�ʽ���
- 	ԭ����		Dao		====>  DaoImpl
-	mybatis��	Mapper	====>  xxMapper.xml
+1、接口式编程
+ 	原生：		Dao		====>  DaoImpl
+	mybatis：	Mapper	====>  xxMapper.xml
  
-2��SqlSession���������ݿ��һ�λỰ���������رգ�
-3��SqlSession��connectionһ�������Ƿ��̰߳�ȫ��ÿ��ʹ�ö�Ӧ��ȥ��ȡ�µĶ���
-4��mapper�ӿ�û��ʵ���࣬����mybatis��Ϊ����ӿ�����һ����������
-		�����ӿں�xml���а󶨣�
+2、SqlSession代表和数据库的一次会话；用完必须关闭；
+3、SqlSession和connection一样她都是非线程安全。每次使用都应该去获取新的对象。
+4、mapper接口没有实现类，但是mybatis会为这个接口生成一个代理对象。
+		（将接口和xml进行绑定）
 		EmployeeMapper empMapper =	sqlSession.getMapper(EmployeeMapper.class);
-5��������Ҫ�������ļ���
-		mybatis��ȫ�������ļ����������ݿ����ӳ���Ϣ�������������Ϣ��...ϵͳ���л�����Ϣ
-		sqlӳ���ļ���������ÿһ��sql����ӳ����Ϣ��
-					��sql��ȡ������	
+5、两个重要的配置文件：
+		mybatis的全局配置文件：包含数据库连接池信息，事务管理器信息等...系统运行环境信息
+		sql映射文件：保存了每一个sql语句的映射信息：
+					将sql抽取出来。	
 
 SqlSession
-1. SqlSession ��ʵ�������̰߳�ȫ�ģ�����ǲ��ܱ������ġ�
-2. SqlSessionÿ��ʹ����ɺ���Ҫ��ȷ�رգ�����رղ����Ǳ����
-3. SqlSession����ֱ�ӵ��÷�����id�������ݿ��������������һ�㻹���Ƽ�ʹ��SqlSession��ȡ��Dao�ӿڵĴ����ִ࣬�д�������ķ��������Ը���ȫ�Ľ������ͼ�����
+1. SqlSession 的实例不是线程安全的，因此是不能被共享的。
+2. SqlSession每次使用完成后需要正确关闭，这个关闭操作是必须的
+3. SqlSession可以直接调用方法的id进行数据库操作，但是我们一般还是推荐使用SqlSession获取到Dao接口的代理类，执行代理对象的方法，可以更安全的进行类型检查操作
 
 
 
-һ��ȫ�������ļ�
-1��mybatis����ʹ��properties�������ⲿproperties�����ļ������ݣ�
-resource��������·���µ���Դ��
-url����������·�����ߴ���·���µ���Դ��
+一、全局配置文件
+1、mybatis可以使用properties来引入外部properties配置文件的内容：
+resource：引入类路径下的资源；
+url：引入网络路径或者磁盘路径下的资源；
 
 
-2��settings�����ܶ���Ҫ�������
+2、settings包含很多重要的设置项：
 	<settings>
 		<setting name="mapUnderscoreToCamelCase" value="true"/>
 	</settings>
-setting:��������ÿһ��������
-	name����������
-	value��������ȡֵ
+setting:用来设置每一个设置项
+	name：设置项名
+	value：设置项取值
 
 
-3��typeAliases��������������
-����Ϊ���ǵ�java��������������������ִ�Сд��
-��1��typeAlias:Ϊĳ��java���������
-	type:ָ��Ҫ�����������ȫ����;Ĭ�ϱ�����������Сд��employee
-	alias:ָ���µı���
-��2��package:Ϊĳ�����µ���������������� 
-	name��ָ��������Ϊ��ǰ���Լ��������еĺ������ÿһ���඼��һ��Ĭ�ϱ���������Сд����
-��3�����������������£�ʹ��@Aliasע��Ϊĳ������ָ���µı���
-ֵ��ע����ǣ�MyBatis�Ѿ�Ϊ���ೣ����Java �����ڽ�����Ӧ�����ͱ��������Ƕ��Ǵ�Сд�����еģ��������������ʱ��ǧ��Ҫռ�����еı�����
+3、typeAliases：别名处理器：
+可以为我们的java类型起别名，别名不区分大小写。
+（1）typeAlias:为某个java类型起别名
+	type:指定要起别名的类型全类名;默认别名就是类名小写；employee
+	alias:指定新的别名
+（2）package:为某个包下的所有类批量起别名 
+	name：指定包名（为当前包以及下面所有的后代包的每一个类都起一个默认别名（类名小写））
+（3）批量起别名的情况下，使用@Alias注解为某个类型指定新的别名
+值得注意的是，MyBatis已经为许多常见的Java 类型内建了相应的类型别名。它们都是大小写不敏感的，我们在起别名的时候千万不要占用已有的别名。
 
-typeHandlers���ʹ�����
-������MyBatis ��Ԥ������䣨PreparedStatement��������һ������ʱ�����Ǵӽ������ȡ��һ��ֵʱ�����������ʹ���������ȡ��ֵ�Ժ��ʵķ�ʽת����Java ���͡�
+typeHandlers类型处理器
+无论是MyBatis 在预处理语句（PreparedStatement）中设置一个参数时，还是从结果集中取出一个值时，都会用类型处理器将获取的值以合适的方式转换成Java 类型。
 
-�������͵Ĵ���
-���ں�ʱ��Ĵ�����JDK1.8��ǰһֱ�Ǹ�ͷ�۵����⡣����ͨ��ʹ��JSR310�淶�쵼��Stephen Colebourne������Joda-Time��������1.8�Ѿ�ʵ��ȫ����JSR310�淶�ˡ�
-����ʱ�䴦���ϣ����ǿ���ʹ��MyBatis����JSR310��Date and Time API����д�ĸ�������ʱ�����ʹ�������
-MyBatis3.4��ǰ�İ汾��Ҫ�����ֶ�ע����Щ���������Ժ�İ汾�����Զ�ע��ġ�
+日期类型的处理
+日期和时间的处理，JDK1.8以前一直是个头疼的问题。我们通常使用JSR310规范领导者Stephen Colebourne创建的Joda-Time来操作。1.8已经实现全部的JSR310规范了。
+日期时间处理上，我们可以使用MyBatis基于JSR310（Date and Time API）编写的各种日期时间类型处理器。
+MyBatis3.4以前的版本需要我们手动注册这些处理器，以后的版本都是自动注册的。
 
-�Զ������ʹ�����
-���ǿ�����д���ʹ������򴴽��Լ������ʹ�������������֧�ֵĻ�Ǳ�׼�����͡�
-���裺
-1��ʵ��org.apache.ibatis.type.TypeHandler�ӿڻ��߼̳�org.apache.ibatis.type.BaseTypeHandler
-2��ָ����ӳ��ĳ��JDBC���ͣ���ѡ������
-3����mybatisȫ�������ļ���ע��
+自定义类型处理器
+我们可以重写类型处理器或创建自己的类型处理器来处理不支持的或非标准的类型。
+步骤：
+1）实现org.apache.ibatis.type.TypeHandler接口或者继承org.apache.ibatis.type.BaseTypeHandler
+2）指定其映射某个JDBC类型（可选操作）
+3）在mybatis全局配置文件中注册
 
-plugins���
-�����MyBatis�ṩ��һ���ǳ�ǿ��Ļ��ƣ����ǿ���ͨ��������޸�MyBatis��һЩ������Ϊ�����ͨ����̬�������ƣ����Խ����Ĵ������κ�һ��������ִ�С�
+plugins插件
+插件是MyBatis提供的一个非常强大的机制，我们可以通过插件来修改MyBatis的一些核心行为。插件通过动态代理机制，可以介入四大对象的任何一个方法的执行。
 Executor(update, query, flushStatements, commit, rollback, getTransaction, close, isClosed);
 ParameterHandler(getParameterObject, setParameters);
 ResultSetHandler(handleResultSets, handleOutputParameters);
 StatementHandler(prepare, parameterize, batch, update, query);
 
-4��environments�������ǣ�mybatis�������ö��ֻ��� ,defaultָ��ʹ��ĳ�ֻ��������Դﵽ�����л�������
-	environment������һ������Ļ�����Ϣ��������������ǩ��id������ǰ������Ψһ��ʶ
-		transactionManager�������������
-		type�����������������:JDBC(JdbcTransactionFactory)ʹ����JDBC ���ύ�ͻع����ã������ڴ�����Դ�õ�����������������Χ��
-					|MANAGED(ManagedTransactionFactory)���ύ��ع�һ�����ӡ�����������������������������ڣ�����JEE Ӧ�÷������������ģ���
-		�Զ��������������ʵ��TransactionFactory�ӿ�.typeָ��Ϊȫ����		
-	dataSource������Դ;
-		type:����Դ����;UNPOOLED(UnpooledDataSourceFactory)��ʹ�����ӳ�
-					|POOLED(PooledDataSourceFactory)ʹ�����ӳ�
-					|JNDI(JndiDataSourceFactory)��EJB ��Ӧ�÷��������������в���ָ��������Դ
-		�Զ�������Դ��ʵ��DataSourceFactory�ӿڣ�type��ȫ����
-		ʵ�ʿ���������ʹ��Spring��������Դ��������������Ƶ�������������������
+4、environments：环境们，mybatis可以配置多种环境 ,default指定使用某种环境。可以达到快速切换环境。
+	environment：配置一个具体的环境信息；必须有两个标签；id代表当前环境的唯一标识
+		transactionManager：事务管理器；
+		type：事务管理器的类型:JDBC(JdbcTransactionFactory)使用了JDBC 的提交和回滚设置，依赖于从数据源得到的连接来管理事务范围。
+					|MANAGED(ManagedTransactionFactory)不提交或回滚一个连接、让容器来管理事务的整个生命周期（比如JEE 应用服务器的上下文）。
+		自定义事务管理器：实现TransactionFactory接口.type指定为全类名		
+	dataSource：数据源;
+		type:数据源类型;UNPOOLED(UnpooledDataSourceFactory)不使用连接池
+					|POOLED(PooledDataSourceFactory)使用连接池
+					|JNDI(JndiDataSourceFactory)在EJB 或应用服务器这类容器中查找指定的数据源
+		自定义数据源：实现DataSourceFactory接口，type是全类名
+		实际开发中我们使用Spring管理数据源，并进行事务控制的配置来覆盖上述配置
 
 
-5��databaseIdProvider��֧�ֶ����ݿ⳧�̵ģ�
-	type="DB_VENDOR"��VendorDatabaseIdProvider
-	 	���þ��ǵõ����ݿ⳧�̵ı�ʶ(����getDatabaseProductName())��mybatis���ܸ������ݿ⳧�̱�ʶ��ִ�в�ͬ��sql;
-	 	MySQL��Oracle��SQL Server,xxxx
+5、databaseIdProvider：支持多数据库厂商的；
+	type="DB_VENDOR"：VendorDatabaseIdProvider
+	 	作用就是得到数据库厂商的标识(驱动getDatabaseProductName())，mybatis就能根据数据库厂商标识来执行不同的sql;
+	 	MySQL，Oracle，SQL Server,xxxx
 
-MyBatisƥ��������£�
-1�����û������databaseIdProvider��ǩ����ôdatabaseId=null;
-2�����������databaseIdProvider��ǩ��ʹ�ñ�ǩ���õ�nameȥƥ�����ݿ���Ϣ��ƥ��������databaseId=����ָ����ֵ����������Ϊnull;
-3�����databaseId��Ϊnull����ֻ���ҵ�����databaseId��sql���;
-4��MyBatis ����ز���databaseId���Ժʹ���ƥ�䵱ǰ���ݿ�databaseId ���Ե�������䡣���ͬʱ�ҵ�����databaseId �Ͳ���databaseId ����ͬ��䣬����߻ᱻ������
+MyBatis匹配规则如下：
+1、如果没有配置databaseIdProvider标签，那么databaseId=null;
+2、如果配置了databaseIdProvider标签，使用标签配置的name去匹配数据库信息，匹配上设置databaseId=配置指定的值，否则依旧为null;
+3、如果databaseId不为null，他只会找到配置databaseId的sql语句;
+4、MyBatis 会加载不带databaseId属性和带有匹配当前数据库databaseId 属性的所有语句。如果同时找到带有databaseId 和不带databaseId 的相同语句，则后者会被舍弃。
 
-6��mappers����sqlӳ��ע�ᵽȫ��������
-	mapper:ע��һ��sqlӳ�� 
-		ע�������ļ�
-		resource��������·���µ�sqlӳ���ļ�
+6、mappers：将sql映射注册到全局配置中
+	mapper:注册一个sql映射 
+		注册配置文件
+		resource：引用类路径下的sql映射文件
 			mybatis/mapper/EmployeeMapper.xml
-		url��������··�����ߴ���·���µ�sqlӳ���ļ�
+		url：引用网路路径或者磁盘路径下的sql映射文件
 			file:///var/mappers/AuthorMapper.xml
 					
-		ע��ӿ�
-		class�����ã�ע�ᣩ�ӿڣ�
-		1����sqlӳ���ļ���ӳ���ļ�������ͽӿ�ͬ�������ҷ�����ӿ�ͬһĿ¼�£�
-		2��û��sqlӳ���ļ������е�sql��������ע��д�ڽӿ���;
+		注册接口
+		class：引用（注册）接口，
+		1、有sql映射文件，映射文件名必须和接口同名，并且放在与接口同一目录下；
+		2、没有sql映射文件，所有的sql都是利用注解写在接口上;
 		
-		�Ƽ���
-		�Ƚ���Ҫ�ģ����ӵ�Dao�ӿ�������дsqlӳ���ļ�
-		����Ҫ���򵥵�Dao�ӿ�Ϊ�˿������ٿ���ʹ��ע�⣻
-	package:����ע��
+		推荐：
+		比较重要的，复杂的Dao接口我们来写sql映射文件
+		不重要，简单的Dao接口为了开发快速可以使用注解；
+	package:批量注册
 
 
-����mapperӳ���ļ�
-1��select��ǩ���ԣ�
-	id��Ψһ��ʶ������������������䣬��Ҫ�ͽӿڵķ�����һ�¡�
-	parameterType���Ὣ�����������Ĳ��������ȫ�޶������������������ǿ�ѡ�ģ���ΪMyBatis����ͨ��TypeHandler�ƶϳ����崫�����Ĳ�����Ĭ��ֵΪunset��
-	resultType������������з��ص��������͵������ȫ�޶����������ע������Ǽ��ϣ���Ӧ���Ǽ��Ͽ��԰��������ͣ��������Ǽ��ϱ����������Ժ�resultMap����ͬʱʹ�á�
-	resultMap���ⲿresultMap���������ã���resultType����ͬʱʹ�á�
-	timeout��������������׳��쳣֮ǰ����������ȴ����ݿⷵ����������������Ĭ��ֵΪunset��������������
-	fetchSize��Ӱ����������ÿ���������صĽ��������Ĭ��ֵΪunset��������������
-	databaseId�����������databaseIdProvider��MyBatis��������еĲ���databaseId��ƥ�䵱ǰdatabaseId����䣻��������߲�������䶼�У��򲻴��Ļᱻ���ԡ�
-	flushCache����������Ϊtrue���κ�ʱ��ֻҪ��䱻���ã����ᵼ�±��ػ���Ͷ������涼�ᱻ��ա�Ĭ��ֵ��false��
-	useCache����������Ϊtrue�����ᵼ�±������Ľ�����������棬Ĭ��ֵ����selectԪ��Ϊtrue��
-	statementType��STATEMENT��PREPARED��CALLABLE��һ���������MyBatis�ֱ�ʹ��Statement��PreparedStatement��CallableStatement��Ĭ��ֵ��PREPARED��
-	resultSetType��FORWARD_ONLY��SCROLL_SENSITIVE��SCROLL_INSENSITIVE�е�һ����Ĭ��ֵΪunset������������
-	resultOrdered��������ý����Ƕ�׽��select������ã����Ϊtrue���ͼ��������Ƕ�׽�������Ƿ��飬����������һ��������У��Ͳ��ᷢ���ж���ǰ��������õ���������ʹ���ڻ�ȡǶ�׵Ľ������ʱ�����ڵ����ڴ治���á�Ĭ��ֵ��false��
-	resultSets��������ý��Զ�������������ã������г����ִ�к󷵻صĽ������ÿ���������һ�����ƣ������Ƕ��ŷָ��ġ�
+二、mapper映射文件
+1、select标签属性：
+	id：唯一标识符。用来引用这条语句，需要和接口的方法名一致。
+	parameterType：会将传入这条语句的参数类的完全限定名或别名。这个属性是可选的，因为MyBatis可以通过TypeHandler推断出具体传入语句的参数，默认值为unset。
+	resultType：从这条语句中返回的期望类型的类的完全限定名或别名。注意如果是集合，那应该是集合可以包含的类型，而不能是集合本身。该属性和resultMap不能同时使用。
+	resultMap：外部resultMap的命名引用，和resultType不能同时使用。
+	timeout：这个设置是在抛出异常之前，驱动程序等待数据库返回请求结果的秒数。默认值为unset（依赖驱动）。
+	fetchSize：影响驱动程序每次批量返回的结果行数。默认值为unset（依赖驱动）。
+	databaseId：如果配置了databaseIdProvider，MyBatis会加载所有的不带databaseId或匹配当前databaseId的语句；如果带或者不带的语句都有，则不带的会被忽略。
+	flushCache：将其设置为true，任何时候只要语句被调用，都会导致本地缓存和二级缓存都会被清空。默认值：false。
+	useCache：将其设置为true，将会导致本条语句的结果被二级缓存，默认值：对select元素为true。
+	statementType：STATEMENT、PREPARED或CALLABLE的一个，这会让MyBatis分别使用Statement、PreparedStatement或CallableStatement，默认值：PREPARED。
+	resultSetType：FORWARD_ONLY，SCROLL_SENSITIVE或SCROLL_INSENSITIVE中的一个，默认值为unset（依赖驱动）
+	resultOrdered：这个设置仅针对嵌套结果select语句适用：如果为true，就假设包含了嵌套结果集或是分组，这样当返回一个主结果行，就不会发生有对面前结果集引用的情况。这就使得在获取嵌套的结果集的时候不至于导致内存不够用。默认值：false。
+	resultSets：这个设置仅对多结果集的情况适用，它将列出语句执行后返回的结果集并每个结果集给一个名称，名称是逗号分隔的。
 
 
-�������ɷ�ʽ
-�����ݿ�֧���Զ������������ֶΣ�����MySQL ��SQL Server�������������useGeneratedKeys=��true����Ȼ���ٰ�keyProperty���õ�Ŀ�������ϡ�
-�����ڲ�֧�����������������ݿ⣨����Oracle���������ʹ��selectKey��Ԫ�أ�selectKey Ԫ�ؽ����������У�id �ᱻ���ã�Ȼ��������ᱻ���á�
+主键生成方式
+若数据库支持自动生成主键的字段（比如MySQL 和SQL Server），则可以设置useGeneratedKeys=”true”，然后再把keyProperty设置到目标属性上。
+而对于不支持自增型主键的数据库（例如Oracle），则可以使用selectKey子元素：selectKey 元素将会首先运行，id 会被设置，然后插入语句会被调用。
 
 
-������Parameters������
-��������
-�C���Խ��ܻ������ͣ��������ͣ��������͵�ֵ���������MyBatis��ֱ��ʹ���������������Ҫ�����κδ�����
-�������
-�C���������������ᱻMyBatis���°�װ��һ��Map���롣Map��key��param1��param2��0��1����ֵ���ǲ�����ֵ��
-��������
-�CΪ����ʹ��@Param��һ�����֣�MyBatis�ͻὫ��Щ������װ��map�У�key���������Լ�ָ�������֡�
+参数（Parameters）传递
+单个参数
+–可以接受基本类型，对象类型，集合类型的值。这种情况MyBatis可直接使用这个参数，不需要经过任何处理。
+多个参数
+–任意多个参数，都会被MyBatis重新包装成一个Map传入。Map的key是param1，param2，0，1…，值就是参数的值。
+命名参数
+–为参数使用@Param起一个名字，MyBatis就会将这些参数封装进map中，key就是我们自己指定的名字。
 POJO
-�C����Щ������������ҵ��POJOʱ������ֱ�Ӵ���POJO��
+–当这些参数属于我们业务POJO时，我们直接传递POJO。
 Map
-�C����Ҳ���Է�װ�������Ϊmap��ֱ�Ӵ��ݡ�
+–我们也可以封装多个参数为map，直接传递。
 
 
-��������
-����Ҳ����ָ��һ��������������ͣ�
+参数处理
+参数也可以指定一个特殊的数据类型：
 	#{ property, javaType = int, jdbcType = NUMERIC }
 	#{ height, javaType = double, jdbcType = NUMERIC, numericScale = 2 }
-�CjavaType ͨ�����ԴӲ�����������ȥȷ����
-�C���null ������ֵ�����ݣ��������п���Ϊ�յ��У�jdbcType ��Ҫ�����ã�
-�C������ֵ���ͣ�����������С���������λ����
-�Cmode ��������ָ��IN��OUT ��INOUT �������������ΪOUT ��INOUT�������������Ե���ʵֵ���ᱻ�ı䣬�����ڻ�ȡ�������ʱ��������������
-����λ��֧�ֵ����ԣ�javaType��jdbcType��mode��numericScale��resultMap��typeHandler��jdbcTypeName��expression
-ʵ����ͨ�������õ��ǣ�����Ϊ�յ�����ָ��jdbcType
-#{key}����ȡ������ֵ��Ԥ���뵽SQL�С���ȫ��
-${key}����ȡ������ֵ��ƴ�ӵ�SQL�С���SQLע�����⣺ORDER BY ${name}
+–javaType 通常可以从参数对象中来去确定；
+–如果null 被当作值来传递，对于所有可能为空的列，jdbcType 需要被设置；
+–对于数值类型，还可以设置小数点后保留的位数；
+–mode 属性允许指定IN，OUT 或INOUT 参数。如果参数为OUT 或INOUT，参数对象属性的真实值将会被改变，就像在获取输出参数时所期望的那样。
+参数位置支持的属性：javaType、jdbcType、mode、numericScale、resultMap、typeHandler、jdbcTypeName、expression
+实际上通常被设置的是：可能为空的列名指定jdbcType
+#{key}：获取参数的值，预编译到SQL中。安全。
+${key}：获取参数的值，拼接到SQL中。有SQL注入问题：ORDER BY ${name}
 
 
-����Զ�ӳ��
-1��ȫ��setting����
-�CautoMappingBehaviorĬ����PARTIAL�������Զ�ӳ��Ĺ��ܡ�Ψһ��Ҫ����������javaBean������һ��
-�C���autoMappingBehavior����Ϊnull���ȡ���Զ�ӳ��
-�C���ݿ��ֶ������淶��POJO���Է����շ�����������A_COLUMN?aColumn�����ǿ��Կ����Զ��շ���������ӳ�书�ܣ�mapUnderscoreToCamelCase=true��
-2���Զ���resultMap��ʵ�ָ߼������ӳ�䡣
+结果自动映射
+1、全局setting设置
+–autoMappingBehavior默认是PARTIAL，开启自动映射的功能。唯一的要求是列名和javaBean属性名一致
+–如果autoMappingBehavior设置为null则会取消自动映射
+–数据库字段命名规范，POJO属性符合驼峰命名法，如A_COLUMN?aColumn，我们可以开启自动驼峰命名规则映射功能，mapUnderscoreToCamelCase=true。
+2、自定义resultMap，实现高级结果集映射。
 
 
-resultMap�Զ�������ӳ�����
-1. constructor-����ʵ����ʱ, ����ע���������췽����
-�CidArg-ID ����; ��ǽ����ΪID ���԰����������Ч��
-�Carg-ע�뵽���췽����һ����ͨ���
-2. id�Cһ��ID ���; ��ǽ����ΪID ���԰����������Ч��
-3. result�Cע�뵽�ֶλ�JavaBean ���Ե���ͨ���
-	id ��result ӳ��һ�������е�ֵ������������(�ַ���,����,˫���ȸ�����,���ڵ�)�����Ի��ֶΡ�
-	property��ӳ�䵽�н�����ֶλ����ԡ�
-	column�����ݱ���������ͨ����resultSet.getString(columnName)�ķ���ֵһ�¡�
-	javaType��һ��Java�����ȫ�޶�������һ�����ͱ��������ӳ�䵽һ��JavaBean��MyBatisͨ�����Զ϶����͡�
-	jdbcType��JDBC�����ǽ�����Ҫ�Բ��룬���º�ɾ����������Ϊ�յ��н��д�����
-	typeHandler�����ʹ�������������ԣ����Ը���Ĭ�ϵ����ʹ��������������ֵ�������ȫ�޶�������һ�����ʹ�������ʵ�֣����������ͱ�����
-4. association�Cһ�����ӵ����͹���;�������������������ͣ����ǿ���ʹ�����ϲ�ѯ�����Լ������Եķ�ʽ��װ����
-	select������Ŀ��ķ�����ѯ��ǰ���Ե�ֵ
-	column����ָ���е�ֵ����Ŀ�귽��
-�CǶ����ӳ��C���ӳ�������Ĺ���,���߲ο�һ��
-5. collection�C�������͵ļ�
-�CǶ����ӳ��C���ӳ�������ļ�,���߲ο�һ��
-6. discriminator�Cʹ�ý��ֵ������ʹ���ĸ����ӳ��
-�Ccase�C����ĳЩֵ�Ľ��ӳ��
-  Ƕ����ӳ��C�������ν��Ҳӳ��������,��˿��԰����ܶ���ͬ��Ԫ��,���������Բ���һ���ⲿ�Ľ��ӳ�䡣
+resultMap自定义结果集映射规则
+1. constructor-类在实例化时, 用来注入结果到构造方法中
+–idArg-ID 参数; 标记结果作为ID 可以帮助提高整体效能
+–arg-注入到构造方法的一个普通结果
+2. id–一个ID 结果; 标记结果作为ID 可以帮助提高整体效能
+3. result–注入到字段或JavaBean 属性的普通结果
+	id 和result 映射一个单独列的值到简单数据类型(字符串,整型,双精度浮点数,日期等)的属性或字段。
+	property：映射到列结果的字段或属性。
+	column：数据表的列名。通常和resultSet.getString(columnName)的返回值一致。
+	javaType：一个Java类的完全限定名，或一个类型别名。如果映射到一个JavaBean，MyBatis通常可以断定类型。
+	jdbcType：JDBC类型是仅仅需要对插入，更新和删除操作可能为空的列进行处理。
+	typeHandler：类型处理器。这个属性，可以覆盖默认的类型处理器。这个属性值是类的完全限定名或是一个类型处理器的实现，或者是类型别名。
+4. association–一个复杂的类型关联;许多结果将包成这种类型，我们可以使用联合查询，并以级联属性的方式封装对象。
+	select：调用目标的方法查询当前属性的值
+	column：将指定列的值传入目标方法
+–嵌入结果映射–结果映射自身的关联,或者参考一个
+5. collection–复杂类型的集
+–嵌入结果映射–结果映射自身的集,或者参考一个
+6. discriminator–使用结果值来决定使用哪个结果映射
+–case–基于某些值的结果映射
+  嵌入结果映射–这种情形结果也映射它本身,因此可以包含很多相同的元素,或者它可以参照一个外部的结果映射。
 
-�����ӳټ��غ����԰�����أ�
+开启延迟加载和属性按需加载：
 <settings>
 	<setting name="lazyLoadingEnabled" value="true"/>
 	<setting name="aggressiveLazyLoading" value="false"/>
 </settings>
 
-��չ-����ֵ��װmap����
-�ֲ���ѯ��ʱ��ͨ��columnָ��������Ӧ���е����ݴ��ݹ�ȥ��������ʱ��Ҫ���ݶ������ݣ�
-ʹ��{key1=column1,key2=column2��}����ʽ��
-association����collection��ǩ��fetchType=eager/lazy���Ը���ȫ�ֵ��ӳټ��ز��ԣ�ָ���������أ�eager�������ӳټ��أ�lazy����
+扩展-多列值封装map传递
+分步查询的时候通过column指定，将对应的列的数据传递过去，我们有时需要传递多列数据；
+使用{key1=column1,key2=column2…}的形式；
+association或者collection标签的fetchType=eager/lazy可以覆盖全局的延迟加载策略，指定立即加载（eager）或者延迟加载（lazy）。
 
 
-������̬SQL
-��̬SQL��MyBatisǿ������֮һ������ļ�����ƴװSQL�Ĳ�����
-��̬SQL Ԫ�غ�ʹ��JSTL ���������ƻ���XML ���ı����������ơ�
-MyBatis ���ù���ǿ��Ļ���OGNL �ı���ʽ���򻯲�����
-1. if:�ж�
+三、动态SQL
+动态SQL是MyBatis强大特性之一。极大的简化我们拼装SQL的操作。
+动态SQL 元素和使用JSTL 或其他类似基于XML 的文本处理器相似。
+MyBatis 采用功能强大的基于OGNL 的表达式来简化操作。
+1. if:判断
 	<if test="id!=null">
 		id=#{id}
 	</if>
 
-2. choose (when, otherwise):��֧ѡ�񣻴���break��swtich-case
-	�������id����id�飬�������lastName����lastName��;ֻ���������һ��
+2. choose (when, otherwise):分支选择；带了break的swtich-case
+	如果带了id就用id查，如果带了lastName就用lastName查;只会进入其中一个
 	<where>
 		<choose>
  			<when test="id != null">
@@ -261,7 +261,7 @@ MyBatis ���ù���ǿ��Ļ���OGNL �ı���ʽ���򻯲�����
  		</choose>
 	</where>
 
-3. trim (where, set)�� �ַ�����ȡ(where(��װ��ѯ����), set(��װ�޸�����))
+3. trim (where, set)： 字符串截取(where(封装查询条件), set(封装修改条件))
 	<trim prefix="where" suffixOverrides="and">
 	 	<if test="id!=null">
 		 	id=#{id} and
@@ -269,13 +269,13 @@ MyBatis ���ù���ǿ��Ļ���OGNL �ı���ʽ���򻯲�����
 		 <if test="lastName!=null &amp;&amp; lastName!=&quot;&quot;">
 		 	last_name like #{lastName} and
 		 </if>
-		 <!-- ognl������ַ��������ֵ�ת���ж�  "0"==0 -->
+		 <!-- ognl会进行字符串与数字的转换判断  "0"==0 -->
 		 <if test="gender==0 or gender==1">
 		  	gender=#{gender}
 		 </if>
 	</trim>
 
-4. set��ǩ�����Զ�ȥ�������','
+4. set标签：会自动去掉多余的','
 	<set>
 		<if test="lastName!=null">
 			last_name=#{lastName},
@@ -288,33 +288,33 @@ MyBatis ���ù���ǿ��Ļ���OGNL �ı���ʽ���򻯲�����
 		</if>
 	</set>
 
-4. foreach�� ��̬SQL ������һ�����õı�Ҫ��������Ҫ��һ�����Ͻ��б�����ͨ�����ڹ���IN ��������ʱ��
-	�������б������ϵȿɵ��������������ʱ
-	 �Cindex�ǵ�ǰ�����Ĵ�����item��ֵ�Ǳ��ε�����ȡ��Ԫ��
-	��ʹ���ֵ䣨����Map.Entry����ļ��ϣ�ʱ
-	 �Cindex�Ǽ���item��ֵ
+4. foreach： 动态SQL 的另外一个常用的必要操作是需要对一个集合进行遍历，通常是在构建IN 条件语句的时候。
+	当迭代列表、集合等可迭代对象或者数组时
+	 –index是当前迭代的次数，item的值是本次迭代获取的元素
+	当使用字典（或者Map.Entry对象的集合）时
+	 –index是键，item是值
  	<foreach collection="ids" item="item_id" separator=","
  		open="where id in(" close=")">
  		#{item_id}
  	</foreach>
-collection��ָ��Ҫ�����ļ��ϣ�
-	list���͵Ĳ��������⴦����װ��map�У�map��key�ͽ�list;
-	item������ǰ��������Ԫ�ظ�ֵ��ָ���ı���;
-	separator:ÿ��Ԫ��֮��ķָ���;
-	open�����������н��ƴ��һ����ʼ���ַ�;
-	close:���������н��ƴ��һ���������ַ�;
-	index:����������list��ʱ����index����������item���ǵ�ǰֵ;
-		    ����map��ʱ��index��ʾ�ľ���map��key��item����map��ֵ;
+collection：指定要遍历的集合：
+list类型的参数会特殊处理封装在map中，map的key就叫list;
+item：将当前遍历出的元素赋值给指定的变量;
+separator:每个元素之间的分隔符;
+open：遍历出所有结果拼接一个开始的字符;
+close:遍历出所有结果拼接一个结束的字符;
+index:索引。遍历list的时候是index就是索引，item就是当前值;
+	    遍历map的时候index表示的就是map的key，item就是map的值;
 
-5. bind�����Դ�OGNL ����ʽ�д���һ������������󶨵������ġ�
+5. bind：可以从OGNL 表达式中创建一个变量并将其绑定到上下文。
 	<bind name="_lastName" value="'%'+lastName+'%'"/>
 
-6. sql��ǩ����ȡ�����õ�sqlƬ�Ρ�����������á�
-1��sql��ȡ��������Ҫ��ѯ�����������߲����õ�������ȡ������������
-2��include�������Ѿ���ȡ��sql��
-3��include�������Զ���һЩproperty��sql��ǩ�ڲ�����ʹ���Զ��������
-	include-property��ȡֵ����ȷ��ʽ${prop},
-	#{����ʹ�����ַ�ʽ}
+6. sql标签：抽取可重用的sql片段。方便后面引用。
+1)sql抽取：经常将要查询的列名，或者插入用的列名抽取出来方便引用
+2)include来引用已经抽取的sql：
+3)include还可以自定义一些property，sql标签内部就能使用自定义的属性
+	include-property：取值的正确方式${prop},
+	#{不能使用这种方式}
 	  <sql id="insertColumn">
 	  		<if test="_databaseId=='oracle'">
 	  			employee_id,last_name,email<!-- ,${testColomn} -->
@@ -326,11 +326,104 @@ collection��ָ��Ҫ�����ļ��ϣ�
 
 
 
-�������ò�����
-1. _parameter:������������
-	����������_parameter�����������
-	��������������ᱻ��װΪһ��map��_parameter���Ǵ������map
-2. _databaseId:���������databaseIdProvider��ǩ��
-	_databaseId���Ǵ�����ǰ���ݿ�ı���oracle
+两个内置参数：
+1. _parameter:代表整个参数
+	单个参数：_parameter就是这个参数
+	多个参数：参数会被封装为一个map；_parameter就是代表这个map
+2. _databaseId:如果配置了databaseIdProvider标签。
+	_databaseId就是代表当前数据库的别名oracle
+
+
+四、缓存
+ <cache eviction="FIFO" flushInterval="60000" readOnly="false" size="1024"></cache> 
+	eviction:缓存的回收策略：
+		• LRU – 最近最少使用的：移除最长时间不被使用的对象。
+		• FIFO – 先进先出：按对象进入缓存的顺序来移除它们。
+		• SOFT – 软引用：移除基于垃圾回收器状态和软引用规则的对象。
+		• WEAK – 弱引用：更积极地移除基于垃圾收集器状态和弱引用规则的对象。
+		• 默认的是 LRU。
+	flushInterval：缓存刷新间隔
+		缓存多长时间清空一次，默认不清空，设置一个毫秒值
+	readOnly:是否只读：
+		true：只读；mybatis认为所有从缓存中获取数据的操作都是只读操作，不会修改数据。
+				 mybatis为了加快获取速度，直接就会将数据在缓存中的引用交给用户。不安全，速度快
+		false：非只读：mybatis觉得获取的数据可能会被修改。
+				mybatis会利用序列化&反序列的技术克隆一份新的数据给你。安全，速度慢
+	size：缓存存放多少元素；
+	type=""：指定自定义缓存的全类名；
+			实现Cache接口即可；
+
+ * 一级缓存：（本地缓存）：sqlSession级别的缓存。一级缓存是一直开启的；SqlSession级别的一个Map
+ * 		与数据库同一次会话期间查询到的数据会放在本地缓存中。
+ * 		以后如果需要获取相同的数据，直接从缓存中拿，没必要再去查询数据库；
+ * 
+ * 		一级缓存失效情况（没有使用到当前一级缓存的情况，效果就是，还需要再向数据库发出查询）：
+ * 		1、sqlSession不同。
+ * 		2、sqlSession相同，查询条件不同.(当前一级缓存中还没有这个数据)
+ * 		3、sqlSession相同，两次查询之间执行了增删改操作(这次增删改可能对当前数据有影响)
+ * 		4、sqlSession相同，手动清除了一级缓存（缓存清空）
+ * 
+ * 二级缓存：（全局缓存）：基于namespace级别的缓存：一个namespace对应一个二级缓存：
+ * 		工作机制：
+ * 		1、一个会话，查询一条数据，这个数据就会被放在当前会话的一级缓存中；
+ * 		2、如果会话关闭；一级缓存中的数据会被保存到二级缓存中；新的会话查询信息，就可以参照二级缓存中的内容；
+ * 		3、sqlSession===EmployeeMapper==>Employee
+ * 						DepartmentMapper===>Department
+ * 			不同namespace查出的数据会放在自己对应的缓存中（map）
+ * 			效果：数据会从二级缓存中获取
+ * 				查出的数据都会被默认先放在一级缓存中。
+ * 				只有会话提交或者关闭以后，一级缓存中的数据才会转移到二级缓存中
+ * 		使用：
+ * 			1）、开启全局二级缓存配置：<setting name="cacheEnabled" value="true"/>
+ * 			2）、去mapper.xml中配置使用二级缓存：
+ * 				<cache></cache>
+ * 			3）、我们的POJO需要实现序列化接口
+ * 	
+ * 和缓存有关的设置/属性：
+ * 			1）、cacheEnabled=true：false：关闭缓存（二级缓存关闭）(一级缓存一直可用的)
+ * 			2）、每个select标签都有useCache="true"：
+ * 					false：不使用缓存（一级缓存依然使用，二级缓存不使用）
+ * 			3）、【每个增删改标签的：flushCache="true"：（一级二级都会清除）】
+ * 					增删改执行完成后就会清楚缓存；
+ * 					测试：flushCache="true"：一级缓存就清空了；二级也会被清除；
+ * 					查询标签：flushCache="false"：
+ * 						如果flushCache=true;每次查询之后都会清空缓存；缓存是没有被使用的；
+ * 			4）、sqlSession.clearCache();只是清除当前session的一级缓存；
+ * 			5）、localCacheScope：本地缓存作用域：（一级缓存SESSION）；当前会话的所有数据保存在会话缓存中；
+ * 								STATEMENT：可以禁用一级缓存；		
+ * 				
+ * 第三方缓存整合：
+ *		1）、导入第三方缓存包即可；
+ *		2）、导入与第三方缓存整合的适配包；官方有；
+ *		3）、mapper.xml中使用自定义缓存
+ *		<cache type="org.mybatis.caches.ehcache.EhcacheCache"></cache>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

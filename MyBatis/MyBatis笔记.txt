@@ -236,16 +236,101 @@ resultMap自定义结果集映射规则
 association或者collection标签的fetchType=eager/lazy可以覆盖全局的延迟加载策略，指定立即加载（eager）或者延迟加载（lazy）。
 
 
+三、动态SQL
+动态SQL是MyBatis强大特性之一。极大的简化我们拼装SQL的操作。
+动态SQL 元素和使用JSTL 或其他类似基于XML 的文本处理器相似。
+MyBatis 采用功能强大的基于OGNL 的表达式来简化操作。
+1. if:判断
+	<if test="id!=null">
+		id=#{id}
+	</if>
+
+2. choose (when, otherwise):分支选择；带了break的swtich-case
+	如果带了id就用id查，如果带了lastName就用lastName查;只会进入其中一个
+	<where>
+		<choose>
+ 			<when test="id != null">
+ 				id = #{id}
+ 			</when>
+	 		<when test="lastName != null">
+ 				last_name like #{lastName}
+ 			</when>
+ 			<otherwise>
+ 				1 = 1
+ 			</otherwise>
+ 		</choose>
+	</where>
+
+3. trim (where, set)： 字符串截取(where(封装查询条件), set(封装修改条件))
+	<trim prefix="where" suffixOverrides="and">
+	 	<if test="id!=null">
+		 	id=#{id} and
+		 </if>
+		 <if test="lastName!=null &amp;&amp; lastName!=&quot;&quot;">
+		 	last_name like #{lastName} and
+		 </if>
+		 <!-- ognl会进行字符串与数字的转换判断  "0"==0 -->
+		 <if test="gender==0 or gender==1">
+		  	gender=#{gender}
+		 </if>
+	</trim>
+
+4. set标签：会自动去掉多余的','
+	<set>
+		<if test="lastName!=null">
+			last_name=#{lastName},
+		</if>
+		<if test="email!=null">
+			email=#{email},
+		</if>
+		<if test="gender!=null">
+			gender=#{gender}
+		</if>
+	</set>
+
+4. foreach： 动态SQL 的另外一个常用的必要操作是需要对一个集合进行遍历，通常是在构建IN 条件语句的时候。
+	当迭代列表、集合等可迭代对象或者数组时
+	 –index是当前迭代的次数，item的值是本次迭代获取的元素
+	当使用字典（或者Map.Entry对象的集合）时
+	 –index是键，item是值
+ 	<foreach collection="ids" item="item_id" separator=","
+ 		open="where id in(" close=")">
+ 		#{item_id}
+ 	</foreach>
+collection：指定要遍历的集合：
+	list类型的参数会特殊处理封装在map中，map的key就叫list;
+	item：将当前遍历出的元素赋值给指定的变量;
+	separator:每个元素之间的分隔符;
+	open：遍历出所有结果拼接一个开始的字符;
+	close:遍历出所有结果拼接一个结束的字符;
+	index:索引。遍历list的时候是index就是索引，item就是当前值;
+		    遍历map的时候index表示的就是map的key，item就是map的值;
+
+5. bind：可以从OGNL 表达式中创建一个变量并将其绑定到上下文。
+	<bind name="_lastName" value="'%'+lastName+'%'"/>
+
+6. sql标签：抽取可重用的sql片段。方便后面引用。
+1、sql抽取：经常将要查询的列名，或者插入用的列名抽取出来方便引用
+2、include来引用已经抽取的sql：
+3、include还可以自定义一些property，sql标签内部就能使用自定义的属性
+	include-property：取值的正确方式${prop},
+	#{不能使用这种方式}
+	  <sql id="insertColumn">
+	  		<if test="_databaseId=='oracle'">
+	  			employee_id,last_name,email<!-- ,${testColomn} -->
+	  		</if>
+	  		<if test="_databaseId=='mysql'">
+	  			last_name,email,gender,d_id
+	  		</if>
+	  </sql>
 
 
 
-
-
-
-
-
-
-
-
+两个内置参数：
+1. _parameter:代表整个参数
+	单个参数：_parameter就是这个参数
+	多个参数：参数会被封装为一个map；_parameter就是代表这个map
+2. _databaseId:如果配置了databaseIdProvider标签。
+	_databaseId就是代表当前数据库的别名oracle
 
 

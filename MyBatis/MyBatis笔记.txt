@@ -400,14 +400,35 @@ index:索引。遍历list的时候是index就是索引，item就是当前值;
 
 
 
+五、MyBatis逆向工程
+MyBatis Generator：简称MBG，是一个专门为MyBatis框架使用者定制的代码生成器，可以快速的根据表生成对应的映射文件，接口，以及bean类。支持基本的增删改查，以及QBC风格的条件查询。但是表连接、存储过程等这些复杂sql的定义需要我们手工编写。
 
+MBG使用
+使用步骤：
+1. 编写MBG的配置文件（重要几处配置）
+	1）jdbcConnection配置数据库连接信息
+	2）javaModelGenerator配置javaBean的生成策略
+	3）sqlMapGenerator配置sql映射文件生成策略
+	4）javaClientGenerator配置Mapper接口的生成策略
+	5）table配置要逆向解析的数据表
+		tableName：表名
+		domainObjectName：对应的javaBean名
+2. 运行代码生成器生成代码：
+	List<String> warnings = newArrayList<String>();
+	booleanoverwrite = true;
+	File configFile = newFile("mbg.xml");
+	ConfigurationParser cp = newConfigurationParser(warnings);
+	Configuration config = cp.parseConfiguration(configFile);
+	DefaultShellCallback callback = newDefaultShellCallback(overwrite);
+	MyBatisGenerator myBatisGenerator = newMyBatisGenerator(config,
+	callback, warnings);
+	myBatisGenerator.generate(null);
 
-
-
-
-
-
-
+注意：
+Context标签
+targetRuntime=“MyBatis3“可以生成带条件的增删改查
+targetRuntime=“MyBatis3Simple“可以生成基本的增删改查
+如果再次生成，建议将之前生成的数据删除，避免xml向后追加内容出现的问题。
 
 
 
